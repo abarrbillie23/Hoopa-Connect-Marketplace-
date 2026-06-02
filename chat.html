@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="inbox.html" class="back-btn">←</a>
+  <span class="topbar-title" id="chat-title">Chat</span>
+  <div></div>
+</header>
+
+<div class="container" style="padding-bottom:140px;">
+  <div id="listing-chip-wrap"></div>
+  <div class="chat-wrap" id="messages-wrap">
+    <div class="skeleton" style="height:44px;border-radius:18px;width:60%;margin-bottom:8px;"></div>
+    <div class="skeleton" style="height:44px;border-radius:18px;width:50%;align-self:flex-end;margin-bottom:8px;"></div>
+    <div class="skeleton" style="height:44px;border-radius:18px;width:65%;"></div>
+  </div>
+</div>
+
+<div class="chat-input-bar">
+  <textarea class="chat-input" id="msg-input" placeholder="Message…" rows="1"
+    oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+  <button class="chat-send-btn" id="send-btn" onclick="sendMessage()" disabled>➤</button>
+</div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="nav-label">Home</span>
+  </a>
+  <a class="nav-item" href="search.html">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span class="nav-label">Search</span>
+  </a>
+  <a class="nav-item nav-sell" href="create-listing.html">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span class="nav-label">Sell</span>
+  </a>
+  <a class="nav-item" href="categories.html">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span class="nav-label">Browse</span>
+  </a>
+  <a class="nav-item" href="profile.html">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span class="nav-label">Profile</span>
+  </a>
+</nav>
+
+<script>
+const params = new URLSearchParams(location.search);
+const convoId = params.get('id');
+let currentUser = null;
+let realtimeSub = null;
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  document.getElementById('send-btn').disabled = !el.value.trim();
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    if (document.getElementById('msg-input').value.trim()) sendMessage();
+  }
+}
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function renderMessage(msg, meId) {
+  const isMe = msg.sender_id === meId;
+  return `
+    <div class="bubble-row ${isMe ? 'me' : 'them'}">
+      <div>
+        <div class="bubble">${esc(msg.content)}</div>
+        <div class="bubble-time">${formatTime(msg.created_at)}</div>
+      </div>
+    </div>
+  `;
+}
+
+function scrollBottom() {
+  window.scrollTo(0, document.body.scrollHeight);
+}
+
+async function loadChat() {
+  const { data: userData } = await supabaseClient.auth.getUser();
+  currentUser = userData?.user;
+  if (!currentUser) { location.href = 'login.html'; return; }
+
+  // Load conversation
+  const { data: convo, error: cError } = await supabaseClient
+    .from('conversations')
+    .select('*')
+    .eq('id', convoId)
+    .single();
+
+  if (cError || !convo) {
+    document.getElementById('messages-wrap').innerHTML = '<p class="grid-empty">Conversation not found.</p>';
+    return;
+  }
+
+  // Get other person
+  const otherId = convo.buyer_id === currentUser.id ? convo.seller_id : convo.buyer_id;
+  const { data: otherProfile } = await supabaseClient
+    .from('profiles').select('username, full_name, avatar_url').eq('id', otherId).single();
+  const otherName = otherProfile?.full_name || otherProfile?.username || 'User';
+  document.getElementById('chat-title').textContent = otherName;
+
+  // Show listing context chip if there's a listing
+  if (convo.listing_id) {
+    const { data: listing } = await supabaseClient
+      .from('listings').select('id, title, price, image_url').eq('id', convo.listing_id).single();
+    if (listing) {
+      document.getElementById('listing-chip-wrap').innerHTML = `
+        <a href="listing.html?id=${esc(listing.id)}" class="listing-context-chip">
+          <img class="listing-chip-img"
+            src="${esc(listing.image_url) || ''}"
+            onerror="this.style.display='none'"
+            alt="${esc(listing.title)}">
+          <div class="listing-chip-info">
+            <div class="listing-chip-title">${esc(listing.title)}</div>
+            <div class="listing-chip-price">$${esc(String(listing.price))}</div>
+          </div>
+          <span style="color:var(--text-dim);">›</span>
+        </a>
+      `;
+    }
+  }
+
+  // Load messages
+  await refreshMessages();
+
+  // Subscribe to real-time new messages
+  realtimeSub = supabaseClient
+    .channel('chat-' + convoId)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'chat_messages',
+      filter: `conversation_id=eq.${convoId}`
+    }, payload => {
+      const wrap = document.getElementById('messages-wrap');
+      wrap.insertAdjacentHTML('beforeend', renderMessage(payload.new, currentUser.id));
+      scrollBottom();
+    })
+    .subscribe();
+}
+
+async function refreshMessages() {
+  const { data: msgs } = await supabaseClient
+    .from('chat_messages')
+    .select('*')
+    .eq('conversation_id', convoId)
+    .order('created_at', { ascending: true });
+
+  const wrap = document.getElementById('messages-wrap');
+  if (!msgs || msgs.length === 0) {
+    wrap.innerHTML = `<p style="text-align:center;color:var(--text-dim);font-size:13px;padding:20px 0;">Say hello 👋</p>`;
+  } else {
+    wrap.innerHTML = msgs.map(m => renderMessage(m, currentUser.id)).join('');
+  }
+  scrollBottom();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const content = input.value.trim();
+  if (!content || !currentUser) return;
+
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  input.value = '';
+  input.style.height = 'auto';
+
+  const { error } = await supabaseClient.from('chat_messages').insert({
+    conversation_id: convoId,
+    sender_id: currentUser.id,
+    content
+  });
+
+  if (error) {
+    showToast('Failed to send', 'error');
+    input.value = content;
+  }
+
+  // Also update conversation updated_at
+  await supabaseClient.from('conversations')
+    .update({ updated_at: new Date().toISOString() })
+    .eq('id', convoId);
+
+  btn.disabled = false;
+}
+
+loadChat();
+</script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="javascript:history.back()" class="back-btn">←</a>
+  <span class="topbar-title" id="page-title">Listing</span>
+  <button class="fav-btn" id="fav-btn" onclick="toggleFav()" title="Save">♡</button>
+</header>
+
+<div class="container" id="listing-container">
+  <div class="skeleton" style="height:260px;border-radius:14px;margin-bottom:12px;"></div>
+  <div class="skeleton" style="height:120px;border-radius:14px;margin-bottom:12px;"></div>
+  <div class="skeleton" style="height:100px;border-radius:14px;"></div>
+</div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="nav-label">Home</span>
+  </a>
+  <a class="nav-item" href="search.html">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span class="nav-label">Search</span>
+  </a>
+  <a class="nav-item nav-sell" href="create-listing.html">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span class="nav-label">Sell</span>
+  </a>
+  <a class="nav-item" href="categories.html">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span class="nav-label">Browse</span>
+  </a>
+  <a class="nav-item" href="profile.html">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span class="nav-label">Profile</span>
+  </a>
+</nav>
+
+<script>
+const params = new URLSearchParams(location.search);
+const listingId = params.get('id');
+let currentListing = null;
+
+function getFavs() {
+  try { return JSON.parse(localStorage.getItem('hc_favs') || '[]'); } catch { return []; }
+}
+function saveFavs(f) { localStorage.setItem('hc_favs', JSON.stringify(f)); }
+
+function updateFavBtn(id) {
+  const btn = document.getElementById('fav-btn');
+  const favs = getFavs();
+  if (favs.includes(String(id))) {
+    btn.textContent = '♥';
+    btn.classList.add('active');
+  } else {
+    btn.textContent = '♡';
+    btn.classList.remove('active');
+  }
+}
+
+function toggleFav() {
+  if (!currentListing) return;
+  const id = String(currentListing.id);
+  let favs = getFavs();
+  if (favs.includes(id)) {
+    favs = favs.filter(f => f !== id);
+    showToast('Removed from favorites');
+  } else {
+    favs.push(id);
+    showToast('Saved to favorites ♥', 'success');
+  }
+  saveFavs(favs);
+  updateFavBtn(id);
+}
+
+async function loadListing() {
+  const container = document.getElementById('listing-container');
+
+  if (!listingId) {
+    container.innerHTML = '<p class="grid-empty">No listing ID provided.</p>';
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from('listings')
+    .select('*')
+    .eq('id', listingId)
+    .single();
+
+  if (error || !data) {
+    container.innerHTML = '<p class="grid-empty">Listing not found.</p>';
+    return;
+  }
+
+  currentListing = data;
+  document.getElementById('page-title').textContent = data.title || 'Listing';
+  updateFavBtn(data.id);
+
+  // FIX: Try to fetch real seller profile from Supabase profiles table
+  let sellerName = 'Community Seller';
+  let sellerHandle = '';
+  let sellerAvatar = '';
+  if (data.user_id) {
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('username, full_name, avatar_url')
+      .eq('id', data.user_id)
+      .single();
+    if (profile) {
+      sellerName = profile.full_name || profile.username || sellerName;
+      sellerHandle = profile.username ? `@${profile.username}` : '';
+      sellerAvatar = profile.avatar_url || '';
+    }
+  }
+
+  container.innerHTML = `
+    <img class="hero-img" src="${esc(data.image_url) || 'https://images.unsplash.com/photo-1511910849309-0dffb8785146?w=800'}" alt="${esc(data.title)}">
+
+    <div class="info-card">
+      <div class="listing-price">$${esc(data.price)}</div>
+      <h1 class="listing-title" style="margin-top:8px;">${esc(data.title)}</h1>
+      <div class="listing-meta">
+        <span class="meta-pill">📂 ${esc(data.category || 'General')}</span>
+        ${data.location ? `<span class="meta-pill">📍 ${esc(data.location)}</span>` : ''}
+      </div>
+      <div class="divider"></div>
+      <h3 style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:.8px;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">Description</h3>
+      <p style="color:var(--text-muted);font-size:14px;line-height:1.7;">${esc(data.description) || 'No description provided.'}</p>
+    </div>
+
+    <div class="info-card">
+      <h3>Seller</h3>
+      <a href="seller.html?id=${esc(data.user_id)}" class="seller-row">
+        <img class="seller-mini-avatar"
+          src="${sellerAvatar || 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 80 80\'><rect width=\'80\' height=\'80\' fill=\'%230f1219\'/><text y=\'52\' x=\'22\' font-size=\'40\'>👤</text></svg>'}"
+          onerror="this.src='data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 80 80\'><rect width=\'80\' height=\'80\' fill=\'%230f1219\'/><text y=\'52\' x=\'22\' font-size=\'40\'>👤</text></svg>'"
+          alt="seller">
+        <div class="seller-info">
+          <h4>${esc(sellerName)}</h4>
+          <p>${sellerHandle || 'Hoopa-Connect member'}</p>
+        </div>
+        <span class="menu-arrow">›</span>
+      </a>
+      <button class="btn btn-primary mt-16" onclick="contactSeller()">💬 Message Seller</button>
+      <button class="btn btn-secondary" onclick="requestItem()">📦 Request Item</button>
+    </div>
+
+    <div class="info-card">
+      <a href="report-listing.html?id=${esc(data.id)}" style="color:var(--text-muted);font-size:13px;text-decoration:none;">⚑ Report this listing</a>
+    </div>
+  `;
+}
+
+function requestItem() {
+  window.location.href = `request-item.html?id=${listingId}`;
+}
+
+async function contactSeller() {
+  const { data: userData } = await supabaseClient.auth.getUser();
+  const user = userData?.user;
+  if (!user) {
+    showToast('Sign in to message sellers', 'error');
+    setTimeout(() => location.href = 'login.html', 1200);
+    return;
+  }
+  if (!currentListing) return;
+  if (user.id === currentListing.user_id) {
+    showToast("That's your own listing!", 'error');
+    return;
+  }
+
+  // Check if a conversation already exists for this buyer+listing
+  const { data: existing } = await supabaseClient
+    .from('conversations')
+    .select('id')
+    .eq('listing_id', currentListing.id)
+    .eq('buyer_id', user.id)
+    .eq('seller_id', currentListing.user_id)
+    .maybeSingle();
+
+  if (existing) {
+    location.href = `chat.html?id=${existing.id}`;
+    return;
+  }
+
+  // Create a new conversation
+  const { data: convo, error } = await supabaseClient
+    .from('conversations')
+    .insert({
+      listing_id: currentListing.id,
+      buyer_id: user.id,
+      seller_id: currentListing.user_id
+    })
+    .select('id')
+    .single();
+
+  if (error || !convo) {
+    showToast('Could not start conversation', 'error');
+    console.error(error);
+    return;
+  }
+
+  location.href = `chat.html?id=${convo.id}`;
+}
+
+loadListing();
+</script>
+</body>
+</html>

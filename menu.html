@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu — Hoopa-Connect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="javascript:history.back()" class="back-btn">←</a>
+  <span class="topbar-title">Menu</span>
+  <div></div>
+</header>
+
+<div class="container">
+
+  <a href="profile.html" class="menu-item mt-16">
+    <div class="menu-icon">👤</div>
+    <div class="menu-item-text"><h3>My Profile</h3><p>View and edit your profile</p></div>
+    <span class="menu-arrow">›</span>
+  </a>
+
+  <a href="my-listings.html" class="menu-item">
+    <div class="menu-icon">🛍️</div>
+    <div class="menu-item-text"><h3>My Listings</h3><p>Manage your posted items</p></div>
+    <span class="menu-arrow">›</span>
+  </a>
+
+  <a href="create-listing.html" class="menu-item">
+    <div class="menu-icon">➕</div>
+    <div class="menu-item-text"><h3>Create Listing</h3><p>Post an item for sale</p></div>
+    <span class="menu-arrow">›</span>
+  </a>
+
+  <a href="favorites.html" class="menu-item">
+    <div class="menu-icon">♥</div>
+    <div class="menu-item-text"><h3>Favorites</h3><p>View saved listings</p></div>
+    <span class="menu-arrow">›</span>
+  </a>
+
+  <div class="divider"></div>
+
+  <a href="index.html" class="menu-item">
+    <div class="menu-icon">🏠</div>
+    <div class="menu-item-text"><h3>Marketplace</h3><p>Browse all listings</p></div>
+    <span class="menu-arrow">›</span>
+  </a>
+
+  <a href="categories.html" class="menu-item">
+    <div class="menu-icon">📂</div>
+    <div class="menu-item-text"><h3>Categories</h3><p>Browse by category</p></div>
+    <span class="menu-arrow">›</span>
+  </a>
+
+  <a href="search.html" class="menu-item">
+    <div class="menu-icon">🔍</div>
+    <div class="menu-item-text"><h3>Search</h3><p>Find specific items</p></div>
+    <span class="menu-arrow">›</span>
+  </a>
+
+  <div class="divider"></div>
+
+  <a href="about.html" class="menu-item">
+    <div class="menu-icon">ℹ️</div>
+    <div class="menu-item-text"><h3>About</h3><p>Learn about Hoopa-Connect</p></div>
+    <span class="menu-arrow">›</span>
+  </a>
+
+  <a href="settings.html" class="menu-item">
+    <div class="menu-icon">⚙️</div>
+    <div class="menu-item-text"><h3>Settings</h3><p>Notifications &amp; preferences</p></div>
+    <span class="menu-arrow">›</span>
+  </a>
+
+  <a href="help.html" class="menu-item">
+    <div class="menu-icon">❓</div>
+    <div class="menu-item-text"><h3>Help</h3><p>FAQs &amp; support</p></div>
+    <span class="menu-arrow">›</span>
+  </a>
+
+</div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="nav-label">Home</span>
+  </a>
+  <a class="nav-item" href="search.html">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span class="nav-label">Search</span>
+  </a>
+  <a class="nav-item nav-sell" href="create-listing.html">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span class="nav-label">Sell</span>
+  </a>
+  <a class="nav-item" href="categories.html">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span class="nav-label">Browse</span>
+  </a>
+  <a class="nav-item" href="profile.html">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span class="nav-label">Profile</span>
+  </a>
+</nav>
+
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Profile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="profile.html" class="back-btn">←</a>
+  <div class="topbar-title">Edit Profile</div>
+  <div></div>
+</header>
+
+<div class="container">
+  <div class="form-card">
+    <h2>Update Profile</h2>
+
+    <!-- Avatar upload -->
+    <div class="avatar-upload-wrap">
+      <div class="avatar-upload-ring" id="avatar-ring">
+        <input type="file" id="avatar-file" accept="image/*" onchange="previewAvatar(this)">
+        <div class="avatar-placeholder" id="avatar-placeholder">👤</div>
+        <img id="avatar-preview" src="" alt="avatar" style="display:none;">
+      </div>
+      <span class="avatar-upload-hint">Tap to change photo</span>
+    </div>
+
+    <input type="text" id="username" placeholder="Username">
+    <input type="text" id="fullname" placeholder="Full Name">
+    <textarea id="bio" placeholder="Bio"></textarea>
+
+    <button class="btn btn-primary" id="save-btn" onclick="saveProfile()">Save Profile</button>
+    <div id="error-msg" style="display:none;margin-top:12px;padding:12px;background:rgba(240,82,82,0.15);border:1px solid #f05252;border-radius:10px;font-size:13px;color:#f05252;word-break:break-word;"></div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="index.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="nav-label">Home</span>
+  </a>
+  <a class="nav-item" href="search.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span class="nav-label">Search</span>
+  </a>
+  <a class="nav-item nav-sell" href="create-listing.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span class="nav-label">Sell</span>
+  </a>
+  <a class="nav-item" href="categories.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span class="nav-label">Browse</span>
+  </a>
+  <a class="nav-item active" href="profile.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span class="nav-label">Profile</span>
+  </a>
+</nav>
+
+<script>
+let selectedAvatarFile = null;
+let existingAvatarUrl = null;
+
+function previewAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+  selectedAvatarFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById('avatar-preview');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('avatar-placeholder').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function showAvatarFromUrl(url) {
+  if (!url) return;
+  existingAvatarUrl = url;
+  const img = document.getElementById('avatar-preview');
+  img.src = url;
+  img.style.display = 'block';
+  document.getElementById('avatar-placeholder').style.display = 'none';
+}
+
+async function uploadAvatar(userId) {
+  if (!selectedAvatarFile) return existingAvatarUrl;
+  const ext = selectedAvatarFile.name.split('.').pop();
+  const path = `avatars/${userId}.${ext}`;
+  const { error } = await supabaseClient.storage
+    .from('avatars')
+    .upload(path, selectedAvatarFile, { upsert: true });
+  if (error) { console.error(error); return existingAvatarUrl; }
+  const { data: urlData } = supabaseClient.storage.from('avatars').getPublicUrl(path);
+  return urlData?.publicUrl || existingAvatarUrl;
+}
+
+async function loadProfile() {
+  const { data: userData } = await supabaseClient.auth.getUser();
+  const user = userData?.user;
+
+  if (user) {
+    // Clear any stale localStorage from a different user session
+    localStorage.removeItem('hc_profile');
+
+    const { data: profile } = await supabaseClient
+      .from('profiles').select('*').eq('id', user.id).single();
+    if (profile) {
+      document.getElementById('username').value = profile.username || '';
+      document.getElementById('fullname').value = profile.full_name || '';
+      document.getElementById('bio').value = profile.bio || '';
+      if (profile.avatar_url) showAvatarFromUrl(profile.avatar_url);
+    }
+    // If no profile row yet, just leave fields empty (new user)
+  }
+  // If not logged in, saveProfile() will catch and show an error
+}
+
+async function saveProfile() {
+  const btn = document.getElementById('save-btn');
+  btn.textContent = 'Saving…';
+  btn.disabled = true;
+
+  const username = document.getElementById('username').value.trim();
+  const fullname = document.getElementById('fullname').value.trim();
+  const bio = document.getElementById('bio').value.trim();
+
+  const { data: userData } = await supabaseClient.auth.getUser();
+  const user = userData?.user;
+
+  if (!user) {
+    document.getElementById('error-msg').textContent = 'Error: Not logged in — please log in first.';
+    document.getElementById('error-msg').style.display = 'block';
+    btn.textContent = 'Save Profile';
+    btn.disabled = false;
+    return;
+  }
+
+  if (user) {
+    let avatarUrl = existingAvatarUrl;
+    if (selectedAvatarFile) {
+      btn.textContent = 'Uploading photo…';
+      avatarUrl = await uploadAvatar(user.id);
+    }
+
+    const { error } = await supabaseClient
+      .from('profiles')
+      .upsert({
+        id: user.id,
+        username,
+        full_name: fullname,
+        bio,
+        avatar_url: avatarUrl,
+        updated_at: new Date().toISOString()
+      });
+
+    if (error) {
+      showToast(error.message || 'Error saving profile', 'error');
+      // Show error visibly on screen too
+      document.getElementById('error-msg').textContent = 'Error: ' + error.message;
+      document.getElementById('error-msg').style.display = 'block';
+      btn.textContent = 'Save Profile';
+      btn.disabled = false;
+      return;
+    }
+  }
+
+  showToast('Profile updated! ✓', 'success');
+  setTimeout(() => location.href = 'profile.html', 1200);
+}
+
+loadProfile();
+</script>
+</body>
+</html>

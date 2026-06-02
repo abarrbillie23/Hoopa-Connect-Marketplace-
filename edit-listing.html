@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Listing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="my-listings.html" class="back-btn">←</a>
+  <span class="topbar-title">Edit Listing</span>
+  <div></div>
+</header>
+
+<div class="container">
+  <div class="form-card">
+    <h2>Update Listing</h2>
+
+    <label class="field-label">Title</label>
+    <input type="text" id="title" placeholder="Listing Title">
+
+    <label class="field-label">Description</label>
+    <textarea id="description" placeholder="Description"></textarea>
+
+    <label class="field-label">Price ($)</label>
+    <input type="number" id="price" placeholder="Price">
+
+    <label class="field-label">Category</label>
+    <select id="category">
+      <option>Cultural / Handmade</option>
+      <option>Electronics</option>
+      <option>Cars &amp; Trucks</option>
+      <option>Home &amp; Garden</option>
+      <option>Clothing</option>
+      <option>Tools</option>
+      <option>Furniture</option>
+      <option>Gaming</option>
+      <option>Services</option>
+      <option>Free Items</option>
+    </select>
+
+    <label class="field-label">Photo</label>
+    <div class="img-upload-area" id="upload-area">
+      <input type="file" id="img-file" accept="image/*" onchange="previewImage(this)">
+      <div id="upload-placeholder">
+        <div class="img-upload-icon">📷</div>
+        <div class="img-upload-label">Tap to change photo<br><strong>or drag & drop</strong></div>
+      </div>
+      <div id="preview-wrap" class="img-preview-wrap" style="display:none;">
+        <img id="img-preview" class="img-preview" src="" alt="preview">
+        <button class="img-remove-btn" onclick="removeImage(event)" title="Remove">✕</button>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="save-btn" onclick="updateListing()">Save Changes</button>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="index.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="nav-label">Home</span>
+  </a>
+  <a class="nav-item" href="search.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span class="nav-label">Search</span>
+  </a>
+  <a class="nav-item nav-sell" href="create-listing.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span class="nav-label">Sell</span>
+  </a>
+  <a class="nav-item" href="categories.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span class="nav-label">Browse</span>
+  </a>
+  <a class="nav-item" href="profile.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span class="nav-label">Profile</span>
+  </a>
+</nav>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const listingId = params.get('id');
+let selectedFile = null;
+let existingImageUrl = null;
+
+function previewImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  selectedFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('img-preview').src = e.target.result;
+    document.getElementById('upload-placeholder').style.display = 'none';
+    document.getElementById('preview-wrap').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  selectedFile = null;
+  existingImageUrl = null;
+  document.getElementById('img-file').value = '';
+  document.getElementById('img-preview').src = '';
+  document.getElementById('upload-placeholder').style.display = 'block';
+  document.getElementById('preview-wrap').style.display = 'none';
+  document.getElementById('upload-placeholder').querySelector('.img-upload-label').innerHTML =
+    'Tap to add a photo<br><strong>or drag & drop</strong>';
+}
+
+function showExistingImage(url) {
+  existingImageUrl = url;
+  document.getElementById('img-preview').src = url;
+  document.getElementById('upload-placeholder').style.display = 'none';
+  document.getElementById('preview-wrap').style.display = 'block';
+}
+
+const area = document.getElementById('upload-area');
+area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('dragover'); });
+area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+area.addEventListener('drop', e => {
+  e.preventDefault();
+  area.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    selectedFile = file;
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('img-file').files = dt.files;
+    previewImage(document.getElementById('img-file'));
+  }
+});
+
+async function uploadImage(userId) {
+  if (!selectedFile) return existingImageUrl;
+  const ext = selectedFile.name.split('.').pop();
+  const path = `listings/${userId}/${Date.now()}.${ext}`;
+  const { error } = await supabaseClient.storage
+    .from('listing-images')
+    .upload(path, selectedFile, { upsert: true });
+  if (error) { console.error(error); return existingImageUrl; }
+  const { data: urlData } = supabaseClient.storage.from('listing-images').getPublicUrl(path);
+  return urlData?.publicUrl || existingImageUrl;
+}
+
+async function loadListing() {
+  const { data, error } = await supabaseClient
+    .from('listings').select('*').eq('id', listingId).single();
+  if (error) { showToast('Listing not found', 'error'); return; }
+  document.getElementById('title').value = data.title || '';
+  document.getElementById('description').value = data.description || '';
+  document.getElementById('price').value = data.price || '';
+  document.getElementById('category').value = data.category || '';
+  if (data.image_url) showExistingImage(data.image_url);
+}
+
+async function updateListing() {
+  const btn = document.getElementById('save-btn');
+  btn.textContent = 'Saving…';
+  btn.disabled = true;
+
+  const { data: userData } = await supabaseClient.auth.getUser();
+  const user = userData?.user;
+
+  let imageUrl = existingImageUrl;
+  if (selectedFile) {
+    btn.textContent = 'Uploading photo…';
+    imageUrl = await uploadImage(user?.id || 'anon');
+  }
+
+  const { error } = await supabaseClient
+    .from('listings')
+    .update({
+      title: document.getElementById('title').value,
+      description: document.getElementById('description').value,
+      price: document.getElementById('price').value,
+      image_url: imageUrl,
+      category: document.getElementById('category').value
+    })
+    .eq('id', listingId);
+
+  if (error) {
+    showToast('Error updating listing', 'error');
+    btn.textContent = 'Save Changes';
+    btn.disabled = false;
+    return;
+  }
+
+  showToast('Listing updated!', 'success');
+  setTimeout(() => location.href = 'my-listings.html', 1200);
+}
+
+loadListing();
+</script>
+</body>
+</html>

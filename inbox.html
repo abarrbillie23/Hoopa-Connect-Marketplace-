@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Messages</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="javascript:history.back()" class="back-btn">←</a>
+  <span class="topbar-title">Messages</span>
+  <div></div>
+</header>
+
+<div class="container" id="inbox-area">
+  <div class="skeleton" style="height:72px;border-radius:14px;margin-bottom:10px;"></div>
+  <div class="skeleton" style="height:72px;border-radius:14px;margin-bottom:10px;"></div>
+  <div class="skeleton" style="height:72px;border-radius:14px;"></div>
+</div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="nav-label">Home</span>
+  </a>
+  <a class="nav-item" href="search.html">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span class="nav-label">Search</span>
+  </a>
+  <a class="nav-item nav-sell" href="create-listing.html">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span class="nav-label">Sell</span>
+  </a>
+  <a class="nav-item" href="categories.html">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span class="nav-label">Browse</span>
+  </a>
+  <a class="nav-item" href="profile.html">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span class="nav-label">Profile</span>
+  </a>
+</nav>
+
+<script>
+function timeAgo(ts) {
+  const diff = Date.now() - new Date(ts).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h`;
+  return `${Math.floor(h / 24)}d`;
+}
+
+async function loadInbox() {
+  const area = document.getElementById('inbox-area');
+  const { data: userData } = await supabaseClient.auth.getUser();
+  const user = userData?.user;
+
+  if (!user) {
+    area.innerHTML = `
+      <div class="hero-band">
+        <h2>Messages</h2>
+        <p>Sign in to view your conversations.</p>
+      </div>
+      <a href="login.html" class="btn btn-primary mt-16">Log In</a>
+    `;
+    return;
+  }
+
+  // Get all conversations this user is part of (as buyer or seller)
+  const { data: convos, error } = await supabaseClient
+    .from('conversations')
+    .select(`
+      id, listing_id, buyer_id, seller_id, updated_at,
+      chat_messages ( content, created_at, sender_id )
+    `)
+    .or(`buyer_id.eq.${user.id},seller_id.eq.${user.id}`)
+    .order('updated_at', { ascending: false });
+
+  if (error) {
+    area.innerHTML = '<p class="grid-empty">Could not load messages.</p>';
+    console.error(error);
+    return;
+  }
+
+  if (!convos || convos.length === 0) {
+    area.innerHTML = `
+      <div style="text-align:center;padding:60px 20px;">
+        <div style="font-size:48px;margin-bottom:16px;">💬</div>
+        <h3 style="font-family:\'Syne\',sans-serif;">No messages yet</h3>
+        <p style="color:var(--text-muted);margin-top:8px;">When you message a seller or get a reply, it'll show up here.</p>
+        <a href="index.html" class="btn btn-primary mt-16">Browse Listings</a>
+      </div>
+    `;
+    return;
+  }
+
+  // Get the other person's info for each conversation
+  const otherIds = convos.map(c => c.buyer_id === user.id ? c.seller_id : c.buyer_id);
+  const { data: profiles } = await supabaseClient
+    .from('profiles')
+    .select('id, username, full_name, avatar_url')
+    .in('id', [...new Set(otherIds)]);
+
+  const profileMap = {};
+  (profiles || []).forEach(p => profileMap[p.id] = p);
+
+  // Get listing titles
+  const listingIds = [...new Set(convos.map(c => c.listing_id).filter(Boolean))];
+  let listingMap = {};
+  if (listingIds.length) {
+    const { data: listings } = await supabaseClient
+      .from('listings').select('id, title').in('id', listingIds);
+    (listings || []).forEach(l => listingMap[l.id] = l);
+  }
+
+  area.innerHTML = convos.map(c => {
+    const otherId = c.buyer_id === user.id ? c.seller_id : c.buyer_id;
+    const other = profileMap[otherId] || {};
+    const name = other.full_name || other.username || 'User';
+    const avatar = other.avatar_url;
+    const msgs = c.chat_messages || [];
+    const last = msgs.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))[0];
+    const preview = last ? esc(last.content.slice(0, 60)) + (last.content.length > 60 ? '…' : '') : 'No messages yet';
+    const unread = last && last.sender_id !== user.id; // simple unread heuristic
+    const listing = c.listing_id ? listingMap[c.listing_id] : null;
+
+    return `
+      <a href="chat.html?id=${esc(c.id)}" class="inbox-item ${unread ? 'unread' : ''}">
+        <div class="inbox-avatar">
+          ${avatar ? `<img src="${esc(avatar)}" alt="${esc(name)}">` : '👤'}
+        </div>
+        <div class="inbox-info">
+          <div class="inbox-name">${esc(name)}</div>
+          <div class="inbox-preview">${listing ? `<span style="color:var(--accent);font-size:11px;">${esc(listing.title)}</span> · ` : ''}${preview}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <span class="inbox-meta">${last ? timeAgo(last.created_at) : ''}</span>
+          ${unread ? '<span class="unread-dot"></span>' : ''}
+        </div>
+      </a>
+    `;
+  }).join('');
+}
+
+loadInbox();
+</script>
+</body>
+</html>

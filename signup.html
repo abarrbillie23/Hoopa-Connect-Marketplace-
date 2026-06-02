@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account — Hoopa-Connect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="login.html" class="back-btn">←</a>
+  <span class="topbar-title">Create Account</span>
+  <div></div>
+</header>
+
+<div class="container">
+
+  <div class="form-card" style="margin-top:20px;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div class="logo-mark" style="margin:0 auto 12px;width:48px;height:48px;font-size:18px;border-radius:13px;">HC</div>
+      <h2>Join Hoopa-Connect</h2>
+      <p>Create your marketplace account</p>
+    </div>
+
+    <label class="field-label">Username *</label>
+    <input type="text" id="username" placeholder="Pick a username" autocomplete="username">
+
+    <label class="field-label">Email *</label>
+    <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+
+    <label class="field-label">Password *</label>
+    <input type="password" id="password" placeholder="At least 6 characters" autocomplete="new-password">
+
+    <button class="btn btn-primary mt-16" id="signup-btn" onclick="signupUser()">Create Account</button>
+
+    <div style="margin-top:16px;text-align:center;">
+      <a href="login.html" style="color:var(--text-muted);font-size:14px;text-decoration:none;">
+        Already have an account? <span style="color:var(--accent);">Log in →</span>
+      </a>
+    </div>
+
+    <p style="color:var(--text-dim);font-size:12px;margin-top:16px;text-align:center;line-height:1.5;">
+      By creating an account you agree to our
+      <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.
+    </p>
+  </div>
+
+</div>
+
+<script>
+async function signupUser() {
+  const btn = document.getElementById('signup-btn');
+  const username = document.getElementById('username').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!username || !email || !password) {
+    showToast('Please fill in all fields', 'error');
+    return;
+  }
+  if (password.length < 6) {
+    showToast('Password must be at least 6 characters', 'error');
+    return;
+  }
+
+  btn.textContent = 'Creating account…';
+  btn.disabled = true;
+
+  const { error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: { data: { username } }
+  });
+
+  if (error) {
+    showToast(error.message, 'error');
+    btn.textContent = 'Create Account';
+    btn.disabled = false;
+    return;
+  }
+
+  showToast('Account created! Check your email to confirm.', 'success');
+  setTimeout(() => location.href = 'login.html', 2000);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') signupUser();
+});
+</script>
+</body>
+</html>

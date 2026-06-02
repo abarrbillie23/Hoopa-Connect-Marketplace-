@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Listing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="javascript:history.back()" class="back-btn">←</a>
+  <span class="topbar-title">New Listing</span>
+  <div></div>
+</header>
+
+<div class="container">
+  <div class="form-card">
+    <h2>Post New Listing</h2>
+    <p>Fill in the details and go live instantly.</p>
+
+    <label class="field-label">Title *</label>
+    <input type="text" id="title" placeholder="What are you selling?">
+
+    <label class="field-label">Description</label>
+    <textarea id="description" placeholder="Condition, details, pickup info..."></textarea>
+
+    <label class="field-label">Price ($) *</label>
+    <input type="number" id="price" placeholder="0.00" min="0" step="0.01">
+
+    <label class="field-label">Category *</label>
+    <select id="category">
+      <option value="">Select a category</option>
+      <option>Cultural / Handmade</option>
+      <option>Electronics</option>
+      <option>Cars &amp; Trucks</option>
+      <option>Home &amp; Garden</option>
+      <option>Clothing</option>
+      <option>Tools</option>
+      <option>Furniture</option>
+      <option>Gaming</option>
+      <option>Services</option>
+      <option>Free Items</option>
+    </select>
+
+    <label class="field-label">Photo</label>
+    <div class="img-upload-area" id="upload-area">
+      <input type="file" id="img-file" accept="image/*" onchange="previewImage(this)">
+      <div id="upload-placeholder">
+        <div class="img-upload-icon">📷</div>
+        <div class="img-upload-label">Tap to add a photo<br><strong>or drag & drop</strong></div>
+      </div>
+      <div id="preview-wrap" class="img-preview-wrap" style="display:none;">
+        <img id="img-preview" class="img-preview" src="" alt="preview">
+        <button class="img-remove-btn" onclick="removeImage(event)" title="Remove">✕</button>
+      </div>
+    </div>
+
+    <button class="btn btn-primary mt-16" id="publish-btn" onclick="createListing()">
+      Publish Listing
+    </button>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a class="nav-item" href="index.html">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="nav-label">Home</span>
+  </a>
+  <a class="nav-item" href="search.html">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span class="nav-label">Search</span>
+  </a>
+  <a class="nav-item nav-sell active" href="create-listing.html">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span class="nav-label">Sell</span>
+  </a>
+  <a class="nav-item" href="categories.html">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span class="nav-label">Browse</span>
+  </a>
+  <a class="nav-item" href="profile.html">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span class="nav-label">Profile</span>
+  </a>
+</nav>
+
+<script>
+let selectedFile = null;
+
+function previewImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  selectedFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('img-preview').src = e.target.result;
+    document.getElementById('upload-placeholder').style.display = 'none';
+    document.getElementById('preview-wrap').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  selectedFile = null;
+  document.getElementById('img-file').value = '';
+  document.getElementById('img-preview').src = '';
+  document.getElementById('upload-placeholder').style.display = 'block';
+  document.getElementById('preview-wrap').style.display = 'none';
+}
+
+// Drag-and-drop
+const area = document.getElementById('upload-area');
+area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('dragover'); });
+area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+area.addEventListener('drop', e => {
+  e.preventDefault();
+  area.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    selectedFile = file;
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById('img-file').files = dt.files;
+    previewImage(document.getElementById('img-file'));
+  }
+});
+
+async function uploadImage(userId) {
+  if (!selectedFile) return null;
+  const ext = selectedFile.name.split('.').pop();
+  const path = `listings/${userId}/${Date.now()}.${ext}`;
+  const { data, error } = await supabaseClient.storage
+    .from('listing-images')
+    .upload(path, selectedFile, { upsert: true });
+  if (error) { console.error(error); return null; }
+  const { data: urlData } = supabaseClient.storage.from('listing-images').getPublicUrl(path);
+  return urlData?.publicUrl || null;
+}
+
+async function createListing() {
+  const btn = document.getElementById('publish-btn');
+  const title = document.getElementById('title').value.trim();
+  const description = document.getElementById('description').value.trim();
+  const price = document.getElementById('price').value;
+  const category = document.getElementById('category').value;
+
+  if (!title || !price || !category) {
+    showToast('Please fill in title, price & category', 'error');
+    return;
+  }
+
+  const { data: userData } = await supabaseClient.auth.getUser();
+  const user = userData?.user;
+  if (!user) {
+    showToast('You must be logged in', 'error');
+    setTimeout(() => location.href = 'login.html', 1200);
+    return;
+  }
+
+  btn.textContent = 'Publishing…';
+  btn.disabled = true;
+
+  let imageUrl = null;
+  if (selectedFile) {
+    btn.textContent = 'Uploading photo…';
+    imageUrl = await uploadImage(user.id);
+  }
+
+  const { error } = await supabaseClient
+    .from('listings')
+    .insert([{ title, description, price, category, image_url: imageUrl, user_id: user.id }]);
+
+  if (error) {
+    showToast('Error creating listing', 'error');
+    btn.textContent = 'Publish Listing';
+    btn.disabled = false;
+    return;
+  }
+
+  showToast('Listing published! 🎉', 'success');
+  setTimeout(() => location.href = 'index.html', 1200);
+}
+</script>
+</body>
+</html>
