@@ -6,7 +6,7 @@
 <title>Request Item</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2 family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js"></script>
@@ -15,168 +15,174 @@
 
 <header class="topbar">
   <a href="javascript:history.back()" class="back-btn">←</a>
-    <span class="topbar-title">Request Item</span>
-      <div></div>
-      </header>
+  <span class="topbar-title">Request Item</span>
+  <div></div>
+</header>
 
-      <div class="container">
+<div class="container">
 
-        <!-- Listing context chip -->
-          <div id="listing-chip-wrap"></div>
+  <!-- Listing context chip -->
+  <div id="listing-chip-wrap"></div>
 
-            <div class="form-card">
-                <h2>Send a Request</h2>
-                    <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">
-                          Your message goes straight to the seller's inbox — they'll reply in the chat.
-                              </p>
+  <div class="form-card">
+    <h2>Send a Request</h2>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">
+      Your message goes straight to the seller's inbox — they'll reply in the chat.
+    </p>
 
-                                  <label class="field-label">Your message *</label>
-                                      <textarea id="message" placeholder="Hi, I'm interested in this item. Is it still available?" style="min-height:120px;"></textarea>
+    <label class="field-label">Your message *</label>
+    <textarea id="message" placeholder="Hi, I'm interested in this item. Is it still available?" style="min-height:120px;"></textarea>
 
-                                          <button class="btn btn-primary mt-16" id="send-btn" onclick="sendRequest()">
-                                                Send Request
-                                                    </button>
-                                                      </div>
+    <button class="btn btn-primary mt-16" id="send-btn" onclick="sendRequest()">
+      Send Request
+    </button>
+  </div>
 
-                                                      </div>
+</div>
 
-                                                      <nav class="bottom-nav">
-                                                        <a class="nav-item" href="index.html">
-                                                            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                                                                <span class="nav-label">Home</span>
-                                                                  </a>
-                                                                    <a class="nav-item" href="search.html">
-                                                                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                                                                            <span class="nav-label">Search</span>
-                                                                              </a>
-                                                                                <a class="nav-item nav-sell" href="create-listing.html">
-                                                                                    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                                                                        <span class="nav-label">Sell</span>
-                                                                                          </a>
-                                                                                            <a class="nav-item" href="categories.html">
-                                                                                                <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                                                                                                    <span class="nav-label">Browse</span>
-                                                                                                      </a>
-                                                                                                        <a class="nav-item" href="profile.html">
-                                                                                                            <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                                                                                                <span class="nav-label">Profile</span>
-                                                                                                                  </a>
-                                                                                                                  </nav>
+<nav class="bottom-nav">
+  <a class="nav-item" href="index.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="nav-label">Home</span>
+  </a>
+  <a class="nav-item" href="search.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span class="nav-label">Search</span>
+  </a>
+  <a class="nav-item nav-sell" href="create-listing.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span class="nav-label">Sell</span>
+  </a>
+  <a class="nav-item" href="categories.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span class="nav-label">Browse</span>
+  </a>
+  <a class="nav-item" href="profile.html">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span class="nav-label">Profile</span>
+  </a>
+</nav>
 
-                                                                                                                  <script>
-                                                                                                                  const params = new URLSearchParams(location.search);
-                                                                                                                  const listingId = params.get('id');
-                                                                                                                  let currentListing = null;
+<script>
+const params = new URLSearchParams(location.search);
+const listingId = params.get('id');
+let currentListing = null;
 
-                                                                                                                  async function loadListingChip() {
-                                                                                                                    if (!listingId) return;
-                                                                                                                      // FIXED: Added user_id to the selected fields so the conversation block knows who the seller is
-                                                                                                                        const { data } = await supabaseClient
-                                                                                                                            .from('listings').select('id, title, price, image_url, user_id').eq('id', listingId).single();
-                                                                                                                              if (!data) return;
-                                                                                                                                currentListing = data;
-                                                                                                                                  document.getElementById('listing-chip-wrap').innerHTML = `
-                                                                                                                                      <a href="listing.html?id=${esc(data.id)}" class="listing-context-chip" style="margin-bottom:16px;">
-                                                                                                                                            <img class="listing-chip-img"
-                                                                                                                                                    src="${esc(data.image_url) || ''}"
-                                                                                                                                                            onerror="this.style.display='none'"
-                                                                                                                                                                    alt="${esc(data.title)}">
-                                                                                                                                                                          <div class="listing-chip-info">
-                                                                                                                                                                                  <div class="listing-chip-title">${esc(data.title)}</div>
-                                                                                                                                                                                          <div class="listing-chip-price">$${esc(String(data.price))}</div>
-                                                                                                                                                                                                </div>
-                                                                                                                                                                                                      <span style="color:var(--text-dim);">›</span>
-                                                                                                                                                                                                          </a>
-                                                                                                                                                                                                            `;
-                                                                                                                                                                                                            }
+async function loadListingChip() {
+  if (!listingId) return;
+  const { data } = await supabaseClient
+    .from('listings').select('id, title, price, image_url, user_id').eq('id', listingId).single();
+  if (!data) return;
+  currentListing = data;
+  document.getElementById('listing-chip-wrap').innerHTML = `
+    <a href="listing.html?id=${esc(data.id)}" class="listing-context-chip" style="margin-bottom:16px;">
+      <img class="listing-chip-img"
+        src="${esc(data.image_url) || ''}"
+        onerror="this.style.display='none'"
+        alt="${esc(data.title)}">
+      <div class="listing-chip-info">
+        <div class="listing-chip-title">${esc(data.title)}</div>
+        <div class="listing-chip-price">$${esc(String(data.price))}</div>
+      </div>
+      <span style="color:var(--text-dim);">›</span>
+    </a>
+  `;
+}
 
-                                                                                                                                                                                                            async function sendRequest() {
-                                                                                                                                                                                                              const btn = document.getElementById('send-btn');
-                                                                                                                                                                                                                const message = document.getElementById('message').value.trim();
+async function sendRequest() {
+  const btn = document.getElementById('send-btn');
+  const message = document.getElementById('message').value.trim();
 
-                                                                                                                                                                                                                  if (!message) {
-                                                                                                                                                                                                                      showToast('Please write a message', 'error');
-                                                                                                                                                                                                                          return;
-                                                                                                                                                                                                                            }
+  if (!message) {
+    showToast('Please write a message', 'error');
+    return;
+  }
 
-                                                                                                                                                                                                                              const { data: userData } = await supabaseClient.auth.getUser();
-                                                                                                                                                                                                                                const user = userData?.user;
-                                                                                                                                                                                                                                  if (!user) {
-                                                                                                                                                                                                                                      showToast('Sign in to contact sellers', 'error');
-                                                                                                                                                                                                                                          setTimeout(() => location.href = 'login.html', 1200);
-                                                                                                                                                                                                                                              return;
-                                                                                                                                                                                                                                                }
+  const { data: userData } = await supabaseClient.auth.getUser();
+  const user = userData?.user;
+  if (!user) {
+    showToast('Sign in to contact sellers', 'error');
+    setTimeout(() => location.href = 'login.html', 1200);
+    return;
+  }
 
-                                                                                                                                                                                                                                                  if (!currentListing) {
-                                                                                                                                                                                                                                                      showToast('Listing not found', 'error');
-                                                                                                                                                                                                                                                          return;
-                                                                                                                                                                                                                                                            }
+  if (!currentListing) {
+    showToast('Listing not found', 'error');
+    return;
+  }
 
-                                                                                                                                                                                                                                                              if (user.id === currentListing.user_id) {
-                                                                                                                                                                                                                                                                  showToast("That's your own listing!", 'error');
-                                                                                                                                                                                                                                                                      return;
-                                                                                                                                                                                                                                                                        }
+  if (user.id === currentListing.user_id) {
+    showToast("That's your own listing!", 'error');
+    return;
+  }
 
-                                                                                                                                                                                                                                                                          btn.textContent = 'Sending…';
-                                                                                                                                                                                                                                                                            btn.disabled = true;
+  btn.textContent = 'Sending…';
+  btn.disabled = true;
 
-                                                                                                                                                                                                                                                                              // Find or create conversation
-                                                                                                                                                                                                                                                                                let convoId;
-                                                                                                                                                                                                                                                                                  const { data: existing } = await supabaseClient
-                                                                                                                                                                                                                                                                                      .from('conversations')
-                                                                                                                                                                                                                                                                                          .select('id')
-                                                                                                                                                                                                                                                                                              .eq('listing_id', listingId)
-                                                                                                                                                                                                                                                                                                  .eq('buyer_id', user.id)
-                                                                                                                                                                                                                                                                                                      .eq('seller_id', currentListing.user_id)
-                                                                                                                                                                                                                                                                                                          .maybeSingle();
+  // Find or create conversation
+  let convoId;
+  const { data: existing, error: eError } = await supabaseClient
+    .from('conversations')
+    .select('id')
+    .eq('listing_id', listingId)
+    .eq('buyer_id', user.id)
+    .eq('seller_id', currentListing.user_id)
+    .maybeSingle();
 
-                                                                                                                                                                                                                                                                                                            if (existing) {
-                                                                                                                                                                                                                                                                                                                convoId = existing.id;
-                                                                                                                                                                                                                                                                                                                  } else {
-                                                                                                                                                                                                                                                                                                                      const { data: convo, error: cError } = await supabaseClient
-                                                                                                                                                                                                                                                                                                                            .from('conversations')
-                                                                                                                                                                                                                                                                                                                                  .insert({
-                                                                                                                                                                                                                                                                                                                                          listing_id: listingId,
-                                                                                                                                                                                                                                                                                                                                                  buyer_id: user.id,
-                                                                                                                                                                                                                                                                                                                                                          seller_id: currentListing.user_id
-                                                                                                                                                                                                                                                                                                                                                                })
-                                                                                                                                                                                                                                                                                                                                                                      .select('id')
-                                                                                                                                                                                                                                                                                                                                                                            .single();
+  if (eError) {
+    console.error("Error looking up existing convo:", eError);
+  }
 
-                                                                                                                                                                                                                                                                                                                                                                                if (cError || !convo) {
-                                                                                                                                                                                                                                                                                                                                                                                      showToast('Could not start conversation', 'error');
-                                                                                                                                                                                                                                                                                                                                                                                            btn.textContent = 'Send Request';
-                                                                                                                                                                                                                                                                                                                                                                                                  btn.disabled = false;
-                                                                                                                                                                                                                                                                                                                                                                                                        return;
-                                                                                                                                                                                                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                                                                                                                                                                                                                convoId = convo.id;
-                                                                                                                                                                                                                                                                                                                                                                                                                  }
+  if (existing) {
+    convoId = existing.id;
+  } else {
+    const { data: convo, error: cError } = await supabaseClient
+      .from('conversations')
+      .insert({
+        listing_id: listingId,
+        buyer_id: user.id,
+        seller_id: currentListing.user_id
+      })
+      .select('id')
+      .single();
 
-                                                                                                                                                                                                                                                                                                                                                                                                                    // Send the message
-                                                                                                                                                                                                                                                                                                                                                                                                                      const { error: mError } = await supabaseClient.from('chat_messages').insert({
-                                                                                                                                                                                                                                                                                                                                                                                                                          conversation_id: convoId,
-                                                                                                                                                                                                                                                                                                                                                                                                                              sender_id: user.id,
-                                                                                                                                                                                                                                                                                                                                                                                                                                  content: message
-                                                                                                                                                                                                                                                                                                                                                                                                                                    });
+    if (cError || !convo) {
+      // TRACKING UPGRADE: Print the real error to your screen toast and browser console
+      console.error("Supabase Error details:", cError);
+      const errorMsg = cError ? cError.message : 'No data returned';
+      showToast(`Could not start conversation: ${errorMsg}`, 'error');
+      
+      btn.textContent = 'Send Request';
+      btn.disabled = false;
+      return;
+    }
+    convoId = convo.id;
+  }
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                      if (mError) {
-                                                                                                                                                                                                                                                                                                                                                                                                                                          showToast('Error sending message', 'error');
-                                                                                                                                                                                                                                                                                                                                                                                                                                              btn.textContent = 'Send Request';
-                                                                                                                                                                                                                                                                                                                                                                                                                                                  btn.disabled = false;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                      return;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                        }
+  // Send the message
+  const { error: mError } = await supabaseClient.from('chat_messages').insert({
+    conversation_id: convoId,
+    sender_id: user.id,
+    content: message
+  });
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                          // Update conversation timestamp
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            await supabaseClient.from('conversations')
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                .update({ updated_at: new Date().toISOString() })
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                    .eq('id', convoId);
+  if (mError) {
+    showToast('Error sending message', 'error');
+    btn.textContent = 'Send Request';
+    btn.disabled = false;
+    return;
+  }
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                      showToast('Request sent! 📨', 'success');
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                        setTimeout(() => location.href = `chat.html?id=${convoId}`, 1200);
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                        }
+  // Update conversation timestamp
+  await supabaseClient.from('conversations')
+    .update({ updated_at: new Date().toISOString() })
+    .eq('id', convoId);
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                        loadListingChip();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </script>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </body>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                        </html>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+  showToast('Request sent! 📨', 'success');
+  setTimeout(() => location.href = `chat.html?id=${convoId}`, 1200);
+}
+
+loadListingChip();
+</script>
+</body>
+</html>
